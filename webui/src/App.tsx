@@ -41,6 +41,7 @@ export default function App() {
   // Settings (Persistent)
   const [swapModel, setSwapModel] = useStickyState('inswapper_128', 'setting_swapModel')
   const [restoreModel, setRestoreModel] = useStickyState('gfpgan_1.4', 'setting_restoreModel')
+  const [executionProvider, setExecutionProvider] = useStickyState('cpu', 'setting_executionProvider')
   const [swapWeight, setSwapWeight] = useStickyState([65], 'setting_swapWeight')
   const [swapBoost, setSwapBoost] = useStickyState([128], 'setting_swapBoost')
   const [restoreWeight, setRestoreWeight] = useStickyState([100], 'setting_restoreWeight')
@@ -196,7 +197,8 @@ export default function App() {
             restore_model: restoreModel,
             restore_weight: restoreWeight[0] / 100,
             restore_blend: restoreBlend[0],
-            similarity: similarity
+            similarity: similarity,
+            providers: [executionProvider]
           })
         })
         const jobData = await jobRes.json()
@@ -456,6 +458,20 @@ export default function App() {
             <button className="panel-close" onClick={closePanels}><X size={16}/></button>
           </div>
           <div className="panel-body">
+            <div className="setting-item">
+              <div className="setting-label">Execution Provider</div>
+              <Select value={executionProvider} onValueChange={setExecutionProvider}>
+                <SelectTrigger className="w-full h-8 text-xs bg-black/40 border-slate-700">
+                  <SelectValue placeholder="Select Provider" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#151515] text-slate-200 border-slate-700">
+                  <SelectItem value="cpu">CPU (ช้า)</SelectItem>
+                  <SelectItem value="cuda">CUDA (Nvidia GPU)</SelectItem>
+                  <SelectItem value="trt">TensorRT (เร็วสุดๆ)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="setting-item">
               <div className="setting-label">Swap Model</div>
               <Select value={swapModel} onValueChange={setSwapModel}>

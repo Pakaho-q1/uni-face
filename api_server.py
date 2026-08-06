@@ -130,6 +130,7 @@ class JobStartRequest(BaseModel):
     restore_blend: int = 100
     mask_types: list[str] = ["box"]
     similarity: bool = False
+    providers: list[str] = ["cpu"]
 
 def run_job_background(job_id: str, req: JobStartRequest, x_client_platform: str):
     uploads_dir, outputs_dir = ensure_workspace(x_client_platform)
@@ -146,6 +147,8 @@ def run_job_background(job_id: str, req: JobStartRequest, x_client_platform: str
     state.restore_blend = req.restore_blend
     state.mask_types = req.mask_types
     state.similarity = req.similarity
+    if hasattr(state, "_parse_providers"):
+        state._parse_providers(" ".join(req.providers))
     state.source_path = source_path
     
     try:

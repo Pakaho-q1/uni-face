@@ -104,16 +104,27 @@ class StateManager:
                 
             if provider_name == 'TensorrtExecutionProvider':
                 os.makedirs(cache_path, exist_ok=True)
-                options = {
+                trt_options = {
                     'trt_engine_cache_enable': True,
                     'trt_engine_cache_path': cache_path,
                     'trt_timing_cache_enable': True,
                     'trt_timing_cache_path': cache_path,
                     'trt_builder_optimization_level': 4
                 }
-                self.providers.append((provider_name, options))
+                cuda_options = {
+                    'cudnn_conv_algo_search': 'DEFAULT'
+                }
+                self.providers = [(provider_name, trt_options), ('CUDAExecutionProvider', cuda_options), 'CPUExecutionProvider']
+                break
+            elif provider_name == 'CUDAExecutionProvider':
+                cuda_options = {
+                    'cudnn_conv_algo_search': 'DEFAULT'
+                }
+                self.providers = [(provider_name, cuda_options), 'CPUExecutionProvider']
+                break
             else:
-                self.providers.append(provider_name)
+                self.providers = ['CPUExecutionProvider']
+                break
                 
         if not self.providers:
             self.providers = ["CPUExecutionProvider"]
