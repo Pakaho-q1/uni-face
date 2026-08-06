@@ -3,6 +3,11 @@
 .cache/
 .temp/
 image/
+.caches/
+.vscode/
+.cache/
+.temp/
+image/
 __pycache__/
 face_recognition/
 models/
@@ -11,7 +16,6 @@ uniface-redesign.html
 
 # Frontend
 webui/node_modules/
-webui/dist/
 
 # OS / Environment
 .DS_Store
