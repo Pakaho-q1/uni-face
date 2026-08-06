@@ -1,0 +1,5 @@
+# Configuration for Inswapper Backend
+backend: "inswapper"
+model_path: "models/swaper/inswapper_128.onnx"
+provider: "cpu" # Default provider (e.g. cpu, cuda)
+execution_threads: 4

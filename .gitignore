@@ -1,0 +1,20 @@
+.caches/
+.vscode/
+.cache/
+.temp/
+image/
+__pycache__/
+face_recognition/
+models/
+workspace/
+uniface-redesign.html
+
+# Frontend
+webui/node_modules/
+webui/dist/
+
+# OS / Environment
+.DS_Store
+.env
+*.zip
+*.log

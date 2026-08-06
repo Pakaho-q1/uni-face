@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uni-Face AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(147, 51, 234, 0.15), transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-top: 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 600;
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-box {
+            position: relative;
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-box:active {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-box input[type="file"] {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-box p {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 2;
+            position: relative;
+            margin-bottom: 0.2rem;
+        }
+        
+        .upload-box span {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        
+        .file-name-display {
+            display: block;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            color: #10b981;
+            font-weight: 600;
+            pointer-events: none;
+            word-break: break-all;
+        }
+
+        .preview-img {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 50%;
+            margin-top: 1rem;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: #475569;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        /* Processing State */
+        .processing-container {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .live-preview-box {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        #live-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        
+        .waiting-text {
+            color: var(--text-muted);
+            animation: pulse 1.5s infinite;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #c084fc);
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .btn-cancel {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .result-container {
+            display: none;
+            text-align: center;
+        }
+
+        .btn-download {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem;
+            width: 100%;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Uni-Face</h1>
+        <p class="subtitle">Next-Gen Face Swapping</p>
+
+        <!-- Upload Form -->
+        <div id="setup-view">
+            <div class="upload-section">
+                <!-- Source Image -->
+                <div class="upload-box" id="source-box">
+                    <input type="file" id="source-file" accept="image/*">
+                    <p>👤 Source Face</p>
+                    <span>Tap to upload a clear face</span>
+                    <span id="source-name" class="file-name-display"></span>
+                    <img id="source-preview" class="preview-img">
+                </div>
+
+                <!-- Target Video -->
+                <div class="upload-box" id="target-box">
+                    <input type="file" id="target-file" accept="video/*,image/*">
+                    <p>🎬 Target Video</p>
+                    <span>Tap to upload the target video</span>
+                    <span id="target-name" class="file-name-display"></span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="start-btn" onclick="startProcess()">Start Magic ✨</button>
+        </div>
+
+        <!-- Processing View -->
+        <div id="processing-view" class="processing-container">
+            <h2 style="font-weight:600;">Processing...</h2>
+            
+            <div class="live-preview-box">
+                <span class="waiting-text" id="waiting-text">Initializing AI Models...<br>(This may take a minute)</span>
+                <img id="live-preview-img" alt="Live Preview">
+            </div>
+
+            <div style="text-align:left;">
+                <div class="status-text">
+                    <span id="progress-percent">0%</span>
+                    <span id="progress-frames">0 / 0</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <button class="btn-cancel" onclick="cancelProcess()">🛑 Stop & Save Video</button>
+        </div>
+
+        <!-- Result View -->
+        <div id="result-view" class="result-container">
+            <h2 style="margin-bottom: 0.5rem;">🎉 Success!</h2>
+            <p class="subtitle" style="margin-bottom: 1.5rem;">Your processed result is ready for download.</p>
+            <a href="#" id="download-btn" class="btn-download">Download Result ⬇️</a>
+            <button class="btn-cancel" style="background: transparent; border-color: var(--text-muted); color: var(--text-muted); width: 100%;" onclick="resetApp()">Start Over</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = ""; 
+        const PLATFORM = "webui_mobile";
+        
+        let currentJobId = null;
+        let ws = null;
+        
+        const sourceInput = document.getElementById('source-file');
+        const targetInput = document.getElementById('target-file');
+        const sourcePreview = document.getElementById('source-preview');
+        const sourceName = document.getElementById('source-name');
+        const targetName = document.getElementById('target-name');
+        
+        sourceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                sourceName.innerText = "Selected: " + file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    sourcePreview.src = e.target.result;
+                    sourcePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        targetInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                targetName.innerText = "Selected: " + file.name;
+            }
+        });
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('files', file); 
+            
+            const res = await fetch(`${API_BASE}/api/v1/upload`, {
+                method: 'POST',
+                headers: { 'X-Client-Platform': PLATFORM },
+                body: formData
+            });
+            const data = await res.json();
+            return data.uploaded[0].file_id; 
+        }
+
+        async function startProcess() {
+            const sourceFile = sourceInput.files[0];
+            const targetFile = targetInput.files[0];
+            
+            if (!sourceFile || !targetFile) {
+                alert("Please upload both Source and Target files first.");
+                return;
+            }
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "Uploading files...";
+            btn.disabled = true;
+
+            try {
+                // Upload Files
+                const sourceId = await uploadFile(sourceFile);
+                const targetId = await uploadFile(targetFile);
+
+                // Start Job
+                btn.innerText = "Starting AI...";
+                const jobRes = await fetch(`${API_BASE}/api/v1/jobs`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Client-Platform': PLATFORM
+                    },
+                    body: JSON.stringify({
+                        source_file_id: sourceId,
+                        target_file_id: targetId,
+                        processors: ["swap", "restore"]
+                    })
+                });
+                
+                const jobData = await jobRes.json();
+                currentJobId = jobData.job_id;
+                
+                // Save to local storage for page reload persistence
+                localStorage.setItem('uniFaceJobId', currentJobId);
+                
+                // Switch UI
+                document.getElementById('setup-view').style.display = 'none';
+                document.getElementById('processing-view').style.display = 'flex';
+                
+                connectWebSocket(currentJobId);
+                
+            } catch (err) {
+                alert("Error starting job: " + err);
+                btn.innerText = "Start Magic ✨";
+                btn.disabled = false;
+            }
+        }
+
+        function connectWebSocket(jobId) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host; 
+            const wsUrl = `${protocol}//${host}/api/v1/ws/jobs/${jobId}`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Update Progress
+                document.getElementById('progress-percent').innerText = `${data.progress}%`;
+                document.getElementById('progress-fill').style.width = `${data.progress}%`;
+                document.getElementById('progress-frames').innerText = `${data.frames_done} / ${data.total_frames}`;
+                
+                // Update Preview Image
+                if (data.preview_image) {
+                    document.getElementById('waiting-text').style.display = 'none';
+                    const img = document.getElementById('live-preview-img');
+                    img.src = data.preview_image;
+                    img.style.display = 'block';
+                }
+                
+                // Handle Completion
+                if (data.status === 'completed') {
+                    showResult();
+                } else if (data.status === 'failed') {
+                    alert("Processing Failed: " + data.error);
+                    resetApp();
+                }
+            };
+        }
+
+        function showResult() {
+            if (ws) ws.close();
+            document.getElementById('processing-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'block';
+            
+            const dlBtn = document.getElementById('download-btn');
+            dlBtn.href = `${API_BASE}/api/v1/jobs/${currentJobId}/download`;
+        }
+
+        async function cancelProcess() {
+            if (!currentJobId) return;
+            const btn = document.querySelector('.btn-cancel');
+            btn.innerText = "Stopping AI... Wait 3s";
+            btn.disabled = true;
+            
+            await fetch(`${API_BASE}/api/v1/jobs/${currentJobId}/cancel`, { method: 'POST' });
+            
+            setTimeout(() => {
+                showResult();
+            }, 3000);
+        }
+        
+        function resetApp() {
+            localStorage.removeItem('uniFaceJobId');
+            window.location.reload();
+        }
+
+        // --- Auto Restore on Page Load ---
+        async function checkSavedJob() {
+            const savedJobId = localStorage.getItem('uniFaceJobId');
+            if (!savedJobId) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/jobs/${savedJobId}`);
+                if (!res.ok) {
+                    localStorage.removeItem('uniFaceJobId');
+                    return;
+                }
+
+                const data = await res.json();
+                currentJobId = savedJobId;
+
+                if (data.status === 'processing' || data.status === 'pending') {
+                    document.getElementById('setup-view').style.display = 'none';
+                    document.getElementById('processing-view').style.display = 'flex';
+                    
+                    if (data.progress !== undefined) {
+                        document.getElementById('progress-percent').innerText = `${data.progress}%`;
+                        document.getElementById('progress-fill').style.width = `${data.progress}%`;
+                    }
+                    if (data.frames_done !== undefined) {
+                        document.getElementById('progress-frames').innerText = `${data.frames_done} / ${data.total_frames}`;
+                    }
+
+                    connectWebSocket(currentJobId);
+                } else if (data.status === 'completed') {
+                    showResult();
+                } else if (data.status === 'failed') {
+                    alert("Previous processing failed: " + data.error);
+                    localStorage.removeItem('uniFaceJobId');
+                }
+            } catch (err) {
+                console.error("Error restoring job state", err);
+            }
+        }
+
+        window.onload = checkSavedJob;
+    </script>
+</body>
+</html>

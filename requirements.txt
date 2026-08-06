@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+websockets
+numpy
+onnx
+onnxruntime
+opencv-python-headless
+tqdm
+scipy
+insightface
+torch
+torchvision
